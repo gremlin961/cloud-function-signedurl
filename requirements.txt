@@ -1,0 +1,4 @@
+oauth2client>=4
+google-cloud-bigquery>=1
+google-cloud-storage>=1
+google-cloud-secret-manager
