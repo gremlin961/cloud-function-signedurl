@@ -30,17 +30,20 @@ def generate_download_signed_url_v4(event, context):
     rawbucket = json.dumps(file['bucket'])
     filename = rawname.strip('"')
     bucketname = rawbucket.strip('"')
-    bucketpath = 'gs://'+bucketname+'/'
 
     # Generate the signed URL
+    # Connect to the secret manager in GCP to generate the local copy of the GCP Service Account key file
     client = secretmanager.SecretManagerServiceClient()
+    # Variables for the GCP secret and project names
     secret_name = "downloader"
     project_id = os.environ["GCP_PROJECT"]
+    # Define the path and version of the secret. Update the version number if needed
     secret_name = f"projects/{project_id}/secrets/{secret_name}/versions/1"
     response = client.access_secret_version(secret_name)
     secret_string = response.payload.data.decode('UTF-8')
     tmpkey = '/tmp/key.json'
     print('Secret accessed and generating temp key')
+    # Write the contents of the GCP secret to a local json file.
     with open(tmpkey, 'w') as outfile:
         outfile.write(secret_string)
     print('temp key file created')
@@ -50,17 +53,17 @@ def generate_download_signed_url_v4(event, context):
     print('storage client authenticated. Generating download URL')
     bucket = storage_client.bucket(bucketname)
     blob = bucket.blob(filename)
+    # Sets the expiration time for the signedURL. You can expand this to 10080 minutes (7 days)
     expires_at_ms = datetime.now() + timedelta(minutes=30)
     url = blob.generate_signed_url(
-        # Allows the function to authenticate to the stroage backend
-        #credentials=credentials,
         # Denotes the version
         version="v4",
-        # This URL is valid for 15 minutes
+        # This URL is valid for 30 minutes
         expiration=expires_at_ms,
         # Allow GET requests using this URL.
         method="GET"
     )
 
     print('Download URL is: ' + url)
+    # You can return the URL to other functions by removing the comment on the line below
     #return url
