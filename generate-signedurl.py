@@ -1,6 +1,7 @@
 # This file is provided as an example only and is not sutible for use in a production environment
 # This script should be used as a GCP Cloud Function and triggered when a data file is uploaded to a GCS
-# buicket.
+# buicket. Make sure to update the "secret_name" variable below to match your own secret name in
+# the Secret Manager service.
 
 # Import the needed Python modules
 from google.cloud import storage
@@ -35,7 +36,7 @@ def generate_download_signed_url_v4(event, context):
     # Connect to the secret manager in GCP to generate the local copy of the GCP Service Account key file
     client = secretmanager.SecretManagerServiceClient()
     # Variables for the GCP secret and project names
-    secret_name = "downloader"
+    secret_name = "testsecret"
     project_id = os.environ["GCP_PROJECT"]
     # Define the path and version of the secret. Update the version number if needed
     secret_name = f"projects/{project_id}/secrets/{secret_name}/versions/1"
